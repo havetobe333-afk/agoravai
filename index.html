@@ -153,16 +153,16 @@
         .task-item.overdue .task-text { color: #991b1b; }
         .task-item.overdue .right-date-pilling-zone { color: #ef4444 !important; }
 
-        /* Nova Estilização de Atenção: Bordas grossas tracejadas */
+        /* Estilização CORRIGIDA de Atenção para não quebrar ou bloquear cliques no Checkbox */
         .task-item.has-attention {
-            border: 3px dashed var(--attention-border-color) !important;
-            margin: 4px 6px;
-            border-radius: 8px;
-            background: #fffbeb;
+            background: #fffbeb !important;
+            box-shadow: inset 0 0 0 2px var(--attention-border-color) !important;
+            border-bottom: 1px solid var(--attention-border-color) !important;
         }
         .task-item.has-attention.completed {
-            border: 2px dashed var(--md-outline) !important;
-            background: transparent;
+            background: transparent !important;
+            box-shadow: none !important;
+            border-bottom: 1px solid #e2e8f0 !important;
         }
 
         /* Alça de Arraste (Drag Handle) */
@@ -170,11 +170,11 @@
         .drag-handle:active { cursor: grabbing; color: var(--md-primary); }
         
         /* Checkbox Material */
-        .task-checkbox { appearance: none; -webkit-appearance: none; width: 18px; height: 18px; border: 2px solid #cbd5e1; border-radius: 5px; cursor: pointer; flex-shrink: 0; display: inline-flex; align-items: center; justify-content: center; transition: all 0.1s; background: #ffffff; z-index: 10; }
+        .task-checkbox { appearance: none; -webkit-appearance: none; width: 18px; height: 18px; border: 2px solid #cbd5e1; border-radius: 5px; cursor: pointer; flex-shrink: 0; display: inline-flex; align-items: center; justify-content: center; transition: all 0.1s; background: #ffffff; position: relative; z-index: 10; pointer-events: auto !important; }
         .task-checkbox:checked { background: var(--md-primary); border-color: var(--md-primary); }
         .task-checkbox:checked::after { content: "✓"; color: var(--md-on-primary); font-size: 11px; font-weight: bold; }
         
-        .task-content { flex-grow: 1; display: flex; justify-content: space-between; align-items: center; gap: 12px; overflow: hidden; }
+        .task-content { flex-grow: 1; display: flex; justify-content: space-between; align-items: center; gap: 12px; overflow: hidden; position: relative; z-index: 5; }
         
         .task-text-row { display: flex; align-items: center; gap: 6px; flex-grow: 1; overflow: hidden; flex-wrap: wrap; }
         .task-text { font-size: 14.5px; font-weight: 500; line-height: 1.4; word-break: break-word; cursor: pointer; color: var(--md-on-surface); }
@@ -580,13 +580,13 @@
             </p>
             <ul class="changelog-list">
                 <li class="changelog-item">
+                    <span class="changelog-version">v1.4.3</span> &bull; Ajuste crítico de padding no container de Atenção Máxima, eliminando conflito de cliques com o checkbox.
+                </li>
+                <li class="changelog-item">
                     <span class="changelog-version">v1.4.2</span> &bull; Correção estrutural na interceptação de cliques dos checkboxes nativos e adição de motor de download autônomo.
                 </li>
                 <li class="changelog-item">
                     <span class="changelog-version">v1.4.0</span> &bull; Implementação de destaque visual crítico tracejado para itens marcados com Atenção Máxima.
-                </li>
-                <li class="changelog-item">
-                    <span class="changelog-version">v1.3.2</span> &bull; Fixação estrutural estável de blocos de projeto agrupados e arrasto manual inteligente.
                 </li>
                 <li class="changelog-item">
                     <span class="changelog-version">v1.1.0</span> &bull; Integração do motor assíncrono de persistência via JSONBin API.
@@ -621,13 +621,11 @@
     </div>
 
     <script>
-        // CONFIGURAÇÃO CORPORATIVA INJETADA CIRURGICAMENTE
         const CONFIG = {
             API_KEY: "$2a$10$V0UFHZ8bHEdDdwGEpXjEYeR1.ZL9oIiMUY//5YbHFHc7yjai/WHpy",
             BIN_ID: "6937666aae596e708f8c6683"
         };
 
-        // Estado Estrutural Interno da Aplicação
         let state = {
             tasks: [],
             tags: [],
@@ -637,23 +635,19 @@
             editingTaskId: null
         };
 
-        // Estado de rascunho temporário controlado pela camada aberta do formulário
         let layerDraft = {
             bucket: 'METEORITO',
-            dueDateStr: 'HOJE', // 'HOJE', 'AMANHA', ou timestamp em formato ISO/YMD
+            dueDateStr: 'HOJE',
             project: '',
             tag: '',
             attention: false
         };
 
-        // Estado interno do navegador do calendário
         let calendarNavDate = new Date();
-        let calendarSelectedDateTimestamp = null; // Armazena data se for customizada
+        let calendarSelectedDateTimestamp = null;
 
-        // Atalho utilitário do DOM
         const $ = id => document.getElementById(id);
 
-        // Ciclo de Vida Primário
         window.addEventListener('DOMContentLoaded', () => {
             loadLocalStorage();
             render();
@@ -667,7 +661,6 @@
                     const parsed = JSON.parse(data);
                     if(parsed && typeof parsed === 'object') {
                         state = Object.assign(state, parsed);
-                        // Limpa flags de edições travadas velhas
                         state.editingTaskId = null;
                         state.editingTagIndex = null;
                         state.editingProjectIndex = null;
@@ -682,26 +675,22 @@
             localStorage.setItem('portal_intranet_state', JSON.stringify(state));
         }
 
-        // FUNÇÃO DE EXPORTAÇÃO E DOWNLOAD AUTOMÁTICO DO CÓDIGO FONTE
         function downloadCurrentSourceFile() {
-            // Captura de forma pura a estrutura do HTML inteiro da aplicação
             const fullHtmlContent = "<!DOCTYPE html>\n" + document.documentElement.outerHTML;
             const blob = new Blob([fullHtmlContent], { type: "text/html;charset=utf-8" });
             const temporaryUrl = URL.createObjectURL(blob);
             
             const downloadLink = document.createElement("a");
             downloadLink.href = temporaryUrl;
-            downloadLink.download = "index.html"; // Força o nome exato solicitado
+            downloadLink.download = "index.html";
             
             document.body.appendChild(downloadLink);
             downloadLink.click();
             
-            // Destruição do elemento temporário da memória do navegador
             document.body.removeChild(downloadLink);
             URL.revokeObjectURL(temporaryUrl);
         }
 
-        // MOTOR ASSÍNCRONO DE SINCRONIZAÇÃO EM NUVEM (JSONBIN API)
         async function syncWithServer() {
             if(!CONFIG.API_KEY || !CONFIG.BIN_ID) return;
             showSyncStatus('syncing');
@@ -736,7 +725,6 @@
                 if(response.ok) {
                     const json = await response.json();
                     if(json.record) {
-                        // Faz merge inteligente para preservar itens caso o servidor venha vazio ou parcial
                         state = Object.assign({}, state, json.record);
                         saveLocalStorage();
                         render();
@@ -759,7 +747,7 @@
 
             if(type === 'syncing') {
                 txt.innerText = "SINCRONIZANDO...";
-                dot.style.background = "#d97706"; // Amber
+                dot.style.background = "#d97706";
                 if(bar) bar.style.width = "60%";
             } else if(type === 'success') {
                 txt.innerText = "SINCRONIZADO";
@@ -772,22 +760,17 @@
             }
         }
 
-        // CONTROLE DE NAVEGAÇÃO DE ABAS E FILTROS
         function switchTab(tabKey) {
             state.currentTab = tabKey;
-            
-            // Ajuste automático visual das abas
             document.querySelectorAll('.app-tabs .tab-btn').forEach(btn => btn.classList.remove('active'));
             $('tab-' + tabKey).classList.add('active');
             
-            // Oculta/Exibe a barra secundária de datas baseado no Balde
             const filterBar = $('date-filters-bar');
             if(tabKey === 'METEORITO') {
                 filterBar.style.display = 'flex';
             } else {
                 filterBar.style.display = 'none';
             }
-            
             render();
         }
 
@@ -804,7 +787,6 @@
             render();
         }
 
-        // CONTROLADORES DE INTERFACE (DRAWERS E LAYERS)
         function openInputLayer(taskId = null) {
             const layer = $('input-container');
             const titleLabel = $('layer-title-label');
@@ -816,7 +798,6 @@
             $('task-attention-checkbox').checked = false;
 
             if(taskId) {
-                // Modo Edição Estrutural
                 state.editingTaskId = taskId;
                 const item = state.tasks.find(x => x.id === taskId);
                 titleLabel.innerText = "Modificar Registro";
@@ -832,11 +813,9 @@
                 btnDelete.style.display = 'flex';
                 actionIcon.innerText = 'save';
             } else {
-                // Modo Inserção Direta
                 state.editingTaskId = null;
                 titleLabel.innerText = "Nova Entrada";
                 
-                // Pega contexto das abas e filtros ativos para poupar cliques (Baixa fricção)
                 layerDraft.bucket = state.currentTab;
                 layerDraft.dueDateStr = (state.currentTab === 'METEORITO') ? state.selectedDateFilter : 'TODOS';
                 if(layerDraft.dueDateStr === 'TODOS') layerDraft.dueDateStr = 'HOJE';
@@ -872,7 +851,6 @@
 
         function getReadableDateLabel(str) {
             if(str === 'HOJE' || str === 'AMANHA' || str === 'SEMANA' || str === 'TODOS') return str;
-            // Se for timestamp formatado YYYY-MM-DD
             if(str.includes('-')) {
                 const parts = str.split('-');
                 return `${parts[2]}/${parts[1]}`;
@@ -880,17 +858,12 @@
             return str;
         }
 
-        // CONTROLADORES DE DRAWERS (BOTTOM SHEETS)
         function openDrawer(id) {
             $('drawer-overlay').style.display = 'block';
-            
-            // Renderizações específicas de drawers dinâmicos
             if(id === 'tags-drawer') { renderTagsList(); renderTagForm(); }
             if(id === 'projects-drawer') { renderProjectsList(); renderProjectForm(); }
             if(id === 'project-picker-drawer') { renderProjectPickerList(); }
             if(id === 'tag-picker-drawer') { renderTagPickerList(); }
-            
-            // Pequeno delay para acionar transição CSS perfeitamente
             setTimeout(() => { $(id).classList.add('open'); }, 10);
         }
 
@@ -899,7 +872,6 @@
             document.querySelectorAll('.drawer').forEach(d => d.classList.remove('open'));
         }
 
-        // DIALOGS INTERNOS DE SELEÇÃO RÁPIDA (DENTRO DO FORMULÁRIO)
         function selectBucketFromDrawer(b) {
             layerDraft.bucket = b;
             refreshLayerBadgesUI();
@@ -918,7 +890,6 @@
             closeAllDrawers();
         }
 
-        // SALVAMENTO DA TAREFA (INSERÇÃO OU MODIFICAÇÃO)
         function saveTaskFromLayer() {
             const txt = $('task-text-input').value.trim();
             if(!txt) return;
@@ -926,7 +897,6 @@
             layerDraft.attention = $('task-attention-checkbox').checked;
 
             if(state.editingTaskId) {
-                // Atualização Cirúrgica
                 const item = state.tasks.find(x => x.id === state.editingTaskId);
                 if(item) {
                     item.texto = txt;
@@ -938,7 +908,6 @@
                     item.updatedAt = Date.now();
                 }
             } else {
-                // Inserção Limpa de Registro
                 const randomId = 'task_' + Math.random().toString(36).substr(2, 9) + Date.now().toString(36);
                 const maxOrdem = state.tasks.reduce((max, x) => x.ordem > max ? x.ordem : max, 0);
                 
@@ -985,21 +954,15 @@
             }
         }
 
-        // ENGENHARIA DE RENDERIZAÇÃO DA CORE UI (DADOS + AGRUPAMENTOS)
         function render() {
             const listContainer = $('task-list-container');
             if(!listContainer) return;
             listContainer.innerHTML = '';
 
             const searchStr = $('search-box').value.trim().toUpperCase();
-
-            // 1. Filtragem Estrutural Básica (Ativos vs Deletados Implícitos)
             let filtered = state.tasks.filter(x => !x.deleted);
-
-            // 2. Filtragem por Balde Principal
             filtered = filtered.filter(x => (x.bucket || 'METEORITO') === state.currentTab);
 
-            // 3. Filtragem Temporal Secundária (Apenas aplicável ao balde Meteorito)
             if(state.currentTab === 'METEORITO') {
                 const hojeYMD = getFormattedYMD(new Date());
                 const amanhaYMD = getFormattedYMD(new Date(Date.now() + 86400000));
@@ -1013,36 +976,27 @@
                     } else if(state.selectedDateFilter === 'SEMANA') {
                         if(d === 'SEMANA') return true;
                         if(d === 'HOJE' || d === 'AMANHA') return true;
-                        // Verifica se o timestamp YMD cai nos próximos 7 dias
                         return isYMDInNextNDays(d, 7);
                     }
-                    return true; // Filtro 'TODOS'
+                    return true;
                 });
             }
 
-            // 4. Filtragem por String de Busca (Se houver texto digitado)
             if(searchStr) {
                 filtered = filtered.filter(x => x.texto.toUpperCase().includes(searchStr) || (x.projeto && x.projeto.toUpperCase().includes(searchStr)) || (x.tag && x.tag.toUpperCase().includes(searchStr)));
             }
 
-            // 5. Ordenação Padrão do Motor (Ordem manual estável se não houver projetos pinados)
             filtered.sort((a, b) => (a.ordem || 0) - (b.ordem || 0));
 
-            // 6. Separação de Projetos Fixados/Ativos e Itens Avulsos
-            // Mapeia projetos ativos na base para criar os blocos unificados
             const activeProjects = state.projects.filter(p => !p.deleted);
-            
-            // Ordena projetos: primeiro os pinados, depois por ordem alfabética ou inserção
             activeProjects.sort((a, b) => {
                 const pinA = a.fixed ? 1 : 0;
                 const pinB = b.fixed ? 1 : 0;
                 return pinB - pinA;
             });
 
-            // Agrupa tarefas pertencentes a projetos ativos
             const projectGroupsMap = {};
             activeProjects.forEach(p => { projectGroupsMap[p.nome] = []; });
-            
             const avulsas = [];
 
             filtered.forEach(t => {
@@ -1053,10 +1007,9 @@
                 }
             });
 
-            // RENDERIZAÇÃO DOS BLOCOS DE PROJETO NO DOM
             activeProjects.forEach(p => {
                 const tasksInProj = projectGroupsMap[p.nome];
-                if(tasksInProj.length === 0) return; // Oculta blocos vazios para mitigar poluição visual
+                if(tasksInProj.length === 0) return;
 
                 const card = document.createElement('div');
                 card.className = `project-group-card ${p.fixed ? 'is-fixed' : ''}`;
@@ -1070,7 +1023,6 @@
                 const titleSpan = document.createElement('span');
                 titleSpan.className = 'project-group-title-link';
                 titleSpan.innerHTML = `<span class="md-icon" style="font-size:14px;">folder</span> ${p.nome}`;
-                // Atalho de fricção zero: clicar no título do projeto abre a inserção já vinculada a ele!
                 titleSpan.onclick = () => {
                     openInputLayer();
                     layerDraft.project = p.nome;
@@ -1098,7 +1050,6 @@
                 header.appendChild(pinBtn);
                 card.appendChild(header);
 
-                // Append das tarefas internas do projeto
                 tasksInProj.forEach(t => {
                     card.appendChild(createTaskItemDOM(t));
                 });
@@ -1106,30 +1057,25 @@
                 listContainer.appendChild(card);
             });
 
-            // RENDERIZAÇÃO DOS ITENS AVULSOS / SEM PROJETO
             avulsas.forEach(t => {
                 listContainer.appendChild(createTaskItemDOM(t));
             });
 
-            // Ativa o Drag and Drop apenas se não houver string de busca ativa (Evita corrupção de index)
             if(!searchStr) {
                 initDragAndDropEngine(listContainer);
             }
         }
 
-        // CONSTRUTOR DINÂMICO DE ELEMENTO TAREFA (NÓ DO DOM)
         function createTaskItemDOM(t) {
             const item = document.createElement('div');
             item.className = `task-item ${t.concluida ? 'completed' : ''} ${t.attention ? 'has-attention' : ''}`;
             item.id = 'dom_' + t.id;
 
-            // Alça de arraste manual
             const handle = document.createElement('div');
             handle.className = 'drag-handle';
             handle.innerHTML = '<span class="md-icon" style="font-size:20px;">drag_indicator</span>';
             item.appendChild(handle);
 
-            // Checkbox nativa estilizada funcional (Isolada do clique da linha)
             const cb = document.createElement('input');
             cb.type = 'checkbox';
             cb.className = 'task-checkbox';
@@ -1140,7 +1086,6 @@
             };
             item.appendChild(cb);
 
-            // Bloco de conteúdo central
             const content = document.createElement('div');
             content.className = 'task-content';
 
@@ -1150,15 +1095,12 @@
             const txtSpan = document.createElement('span');
             txtSpan.className = 'task-text';
             txtSpan.innerText = t.texto;
-            
-            // Clique direto no texto abre o modificador/editor do registro
             txtSpan.onclick = (e) => {
                 e.stopPropagation();
                 openInputLayer(t.id);
             };
             textRow.appendChild(txtSpan);
 
-            // Badge condicional de Tags contextuais
             if(t.tag) {
                 const tagObj = state.tags.find(x => x.nome === t.tag && !x.deleted);
                 if(tagObj) {
@@ -1174,13 +1116,11 @@
 
             content.appendChild(textRow);
 
-            // Zona Pilling Direita para controle temporal rápido
             const dateZone = document.createElement('div');
             dateZone.className = 'right-date-pilling-zone';
             dateZone.innerHTML = `<span class="right-date-text">${getReadableDateLabel(t.dueDate || 'HOJE')}</span><span class="right-date-icon"><span class="md-icon">calendar_today</span></span>`;
             dateZone.onclick = (e) => {
                 e.stopPropagation();
-                // Abre o calendário injetando o ID da tarefa para alteração de data instantânea
                 state.editingTaskId = t.id;
                 openCalendarPopup();
             };
@@ -1190,7 +1130,6 @@
             return item;
         }
 
-        // MOTOR RECURSIVO DE DRAG AND DROP (ARRANQUE MANUAL)
         function initDragAndDropEngine(listContainer) {
             const items = listContainer.querySelectorAll('.task-item');
             const handles = listContainer.querySelectorAll('.drag-handle');
@@ -1208,7 +1147,6 @@
                     item.classList.remove('dragging');
                     item.removeAttribute('draggable');
                     
-                    // Recalcula ordenação sequencial baseada na disposição física final do DOM real
                     const finalDomList = Array.from(listContainer.querySelectorAll('.task-item'));
                     finalDomList.forEach((dom, idx) => {
                         const origId = dom.id.replace('dom_', '');
@@ -1239,7 +1177,6 @@
             });
         }
 
-        // GERENCIADOR INTERNO DE MARCADORES (TAGS) NO DOM
         function renderTagForm() {
             $('new-tag-name').value = '';
             $('new-tag-color').value = '#1e3a8a';
@@ -1269,7 +1206,7 @@
 
             if(state.tags.some(x => x.nome === name && !x.deleted)) return;
 
-            state.tags.push({ nome: name, cor: color, deleted: false });
+            state.tags.push({ nome: name, color: color, deleted: false });
             saveLocalStorage();
             renderTagForm();
             renderTagsList();
@@ -1280,7 +1217,6 @@
         function deleteTag(name) {
             const t = state.tags.find(x => x.nome === name);
             if(t) { t.deleted = true; t.deletedAt = Date.now(); }
-            // Desvincula automaticamente tarefas associadas à tag excluída
             state.tasks.forEach(x => { if(x.tag === name) x.tag = ''; });
             saveLocalStorage();
             renderTagsList();
@@ -1302,7 +1238,6 @@
             });
         }
 
-        // GERENCIADOR INTERNO DE PROJETOS NO DOM
         function renderProjectForm() {
             $('new-project-name').value = '';
             state.editingProjectIndex = null;
@@ -1341,7 +1276,6 @@
         function deleteProject(name) {
             const p = state.projects.find(x => x.nome === name);
             if(p) { p.deleted = true; p.deletedAt = Date.now(); }
-            // Desvincula automaticamente tarefas associadas ao projeto excluído
             state.tasks.forEach(x => { if(x.projeto === name) x.projeto = ''; });
             saveLocalStorage();
             renderProjectsList();
@@ -1363,7 +1297,6 @@
             });
         }
 
-        // MOTOR INTERNO DO CALENDÁRIO MATERIAL CUSTOMIZADO
         function openCalendarPopup() {
             $('calendar-popup-overlay').style.display = 'flex';
             calendarNavDate = new Date();
@@ -1372,7 +1305,6 @@
 
         function closeCalendarPopup() {
             $('calendar-popup-overlay').style.display = 'none';
-            // Se estivéssemos editando direto na lista por atalho, limpa a flag ao fechar
             if(!$('input-layer').classList.contains('visible')) {
                 state.editingTaskId = null;
             }
@@ -1420,14 +1352,12 @@
             const firstDayIndex = new Date(year, month, 1).getDay();
             const totalDays = new Date(year, month + 1, 0).getDate();
 
-            // Células vazias iniciais
             for (let i = 0; i < firstDayIndex; i++) {
                 const cell = document.createElement('div');
                 cell.className = 'calendar-day-cell empty';
                 grid.appendChild(cell);
             }
 
-            // Dias do mês real
             const hojeYMD = getFormattedYMD(new Date());
             let currentActiveSelection = '';
             if($('input-layer').classList.contains('visible')) {
@@ -1452,7 +1382,6 @@
             }
         }
 
-        // UTILITÁRIOS INTERNOS DE DATA (ISO & TIMESTAMP VALIDATION)
         function getFormattedYMD(dateObj) {
             const y = dateObj.getFullYear();
             const m = String(dateObj.getMonth() + 1).padStart(2, '0');
